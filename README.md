@@ -1,2 +1,3 @@
-# Screencasting tool for X Window System    
-## Work in progress
+# xscreencast
+## Screencasting tool for X Window System    
+### Work in progress
