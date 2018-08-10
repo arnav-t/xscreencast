@@ -1,11 +1,12 @@
-libs = -lX11
-cc = gcc
+CC = gcc
+LIBS = -lX11
+
 
 xscreencast: xscreencast.o
-	$(cc) xscreencast.o -o xscreencast $(libs) 
+	$(CC) xscreencast.o -o xscreencast $(LIBS) 
 
 xscreencast.o: xscreencast.c
-	$(cc) -c xscreencast.c $(libs)
+	$(CC) -c xscreencast.c $(LIBS)
 
 clean:
 	rm *.o
