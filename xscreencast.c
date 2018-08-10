@@ -3,10 +3,10 @@
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 
-
 int main()
 {
-	Display *d = XOpenDisplay(0);
-	printf("Still good in the hood\n");
+	Display *disp = XOpenDisplay(NULL);
+	Screen *scr = XDefaultScreenOfDisplay(disp);
+	printf("Width: %d, Height: %d\n", WidthOfScreen(scr), HeightOfScreen(scr));
 	return 0;
 }
