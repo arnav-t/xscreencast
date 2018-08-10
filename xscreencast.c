@@ -6,11 +6,11 @@
 
 void getPixel(Display *disp, int x, int y, XColor *color)
 {
-	// Initialize image
+	// Initialize 1x1 image
 	XImage *img = XGetImage(disp, RootWindow(disp, DefaultScreen(disp)), x, y, 1, 1, AllPlanes, XYPixmap);
 	
 	// Get pixel value
-	color->pixel = XGetPixel(img, x, y);
+	color->pixel = XGetPixel(img, 0, 0);
 	
 	// Free memory
 	XFree(img);
