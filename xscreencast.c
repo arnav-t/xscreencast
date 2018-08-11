@@ -75,7 +75,8 @@ void saveImage(Display *disp, char file[], int downscale)
 
 int main(int argc, char *argv[])
 {
-	clock_t start = clock();
+	server(atoi(argv[1]));
+	/*clock_t start = clock();
 
 	// Connect to X server
 	Display *disp = XOpenDisplay(NULL);
@@ -89,7 +90,7 @@ int main(int argc, char *argv[])
 	XCloseDisplay(disp);
 
 	double execTime = (double)(clock() - start)/CLOCKS_PER_SEC;
-	printf("Process completed in %.2lf s\n", execTime);
+	printf("Process completed in %.2lf s\n", execTime);*/
 
 	return 0;
 }
