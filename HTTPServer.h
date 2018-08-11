@@ -10,7 +10,7 @@ const char LOCALHOST[] = "127.0.0.1";
 const char HOMEPAGE[] = "home.html";
 const char IMAGE[] = "scr.jpg";
 
-void server(int port)
+void server(int port, int downscale)
 {
 	// Initialize socket
 	int servSock = socket(AF_INET, SOCK_STREAM, 0);
@@ -72,6 +72,7 @@ void server(int port)
 			// Append to body
 			strcat(body, buffer);
 		}
+		sprintf(body, body, (int)(20/(downscale*downscale) + 1));
 		char header[128];
 		sprintf(header, "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: %ld\n\n", strlen(body));
 

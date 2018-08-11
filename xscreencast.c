@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -75,7 +76,11 @@ void saveImage(Display *disp, char file[], int downscale)
 
 int main(int argc, char *argv[])
 {
-	int port = atoi(argv[1]);
+	// Check command line arguments
+	int downscale = 1;
+	if( !strcmp(argv[1], "-d") )
+		downscale = atoi(argv[2]);
+	int port = atoi(argv[argc - 1]);
 
 	// Connect to X server
 	Display *disp = XOpenDisplay(NULL);
@@ -86,11 +91,11 @@ int main(int argc, char *argv[])
 
 		printf("Including stb_image_write.h...\n");
 		printf("Saving as %s...\n", IMAGE);
-		saveImage(disp, IMAGE, 2);
+		saveImage(disp, IMAGE, downscale);
 		printf("Saved screenshot successfully.\n");
 
 		// Launch server
-		server(port);
+		server(port, downscale);
 
 		double execTime = (double)(clock() - start)/CLOCKS_PER_SEC;
 		printf("Frame completed in %.2lf s\n", execTime);
