@@ -5,6 +5,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 
+#include "HTTPServer.h"
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
