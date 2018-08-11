@@ -4,6 +4,9 @@
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 void getPixel(Display *disp, int x, int y, XColor *color)
 {
 	// Initialize 1x1 image
@@ -27,6 +30,7 @@ int main(int argc, char *argv[])
 	// Get default screen for the display
 	Screen *scr = XDefaultScreenOfDisplay(disp);
 
+	printf("Including stb_image_write.h...\n");
 	printf("Width: %d, Height: %d\n", WidthOfScreen(scr), HeightOfScreen(scr));
 	XColor color;
 	int x = atoi(argv[1]);
