@@ -4,13 +4,18 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <time.h>
 
 const char LOCALHOST[] = "127.0.0.1";
+const char HOMEPAGE[] = "home.html";
+const char IMAGE[] = "scr.jpg";
 
 void server(int port)
 {
 	// Initialize socket
 	int servSock = socket(AF_INET, SOCK_STREAM, 0);
+	int option = 1;
+	setsockopt(servSock, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 	if(servSock == -1)
 	{
 		perror("Socket could not be created.\n");
@@ -21,7 +26,7 @@ void server(int port)
 	struct sockaddr_in servAddr;
 	servAddr.sin_family = AF_INET;
 	servAddr.sin_port = htons(port);
-	servAddr.sin_addr.s_addr = inet_addr(LOCALHOST);
+	servAddr.sin_addr.s_addr = INADDR_ANY;
 
 	// Bind socket to server address
 	if(bind(servSock, &servAddr, sizeof(servAddr)) == -1)
@@ -50,7 +55,6 @@ void server(int port)
 	// Recieve request text
 	char buffer[1024];
 	read(newSock, buffer, 1024);
-	printf("Request from client: \n%s\n", buffer);
 
 	// Send homepage if requested
 	if( !strncmp("GET / HTTP/1.1", buffer, strlen("GET / HTTP/1.1")) )
@@ -58,7 +62,16 @@ void server(int port)
 		printf("Sending home page...\n");
 		
 		// Initialize response
-		char body[] = "<HTML>\n<HEAD>\n<TITLE>Home Page</TITLE>\n</HEAD>\n<BODY>\n<h1>HOME PAGE</h1>\n<img src=\"scr.jpg\"></img>\n</BODY>\n</HTML>\n";
+		char buffer[256];
+		char body[1024] = "";
+		FILE *ptr;
+		ptr = fopen(HOMEPAGE, "r");
+		size_t bytes;
+		while( (bytes = fread(buffer, 1, sizeof(buffer), ptr)) > 0) 
+		{
+			// Append to body
+			strcat(body, buffer);
+		}
 		char header[128];
 		sprintf(header, "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: %ld\n\n", strlen(body));
 
@@ -67,12 +80,10 @@ void server(int port)
 		
 		// Send response body
 		send(newSock, body, strlen(body), 0);
-		printf("Send response:\n%s\n", body);
 	}
 
 	// Send screenshot image if requested
 	read(newSock, buffer, 1024);
-	printf("Request from client: \n%s\n", buffer);
 	if( !strncmp("GET /scr.jpg", buffer, strlen("GET /scr.jpg")) )
 	{
 		printf("Sending scr.jpg...\n");
@@ -85,9 +96,9 @@ void server(int port)
 
 		// Send response body
 		// Read from image
-		char buffer[256];
+		char buffer[4096];
 		FILE *ptr;
-		ptr = fopen("scr.jpg", "rb");
+		ptr = fopen(IMAGE, "rb");
 		size_t bytes;
 		while( (bytes = fread(buffer, 1, sizeof(buffer), ptr)) > 0) 
 		{
@@ -96,5 +107,7 @@ void server(int port)
 		}
 	}
 
-	shutdown(newSock, 0);
+	// Close all conections
+	close(newSock);
+	close(servSock);
 }

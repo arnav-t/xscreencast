@@ -75,22 +75,29 @@ void saveImage(Display *disp, char file[], int downscale)
 
 int main(int argc, char *argv[])
 {
-	server(atoi(argv[1]));
-	/*clock_t start = clock();
+	int port = atoi(argv[1]);
 
 	// Connect to X server
 	Display *disp = XOpenDisplay(NULL);
 
-	printf("Including stb_image_write.h...\n");
-	printf("Saving as %s...\n", argv[1]);
-	saveImage(disp, argv[1], atoi(argv[2]));
-	printf("Saved screenshot successfully.\n");
+	while(1)
+	{
+		clock_t start = clock();
+
+		printf("Including stb_image_write.h...\n");
+		printf("Saving as %s...\n", IMAGE);
+		saveImage(disp, IMAGE, 2);
+		printf("Saved screenshot successfully.\n");
+
+		// Launch server
+		server(port);
+
+		double execTime = (double)(clock() - start)/CLOCKS_PER_SEC;
+		printf("Frame completed in %.2lf s\n", execTime);
+	}
 
 	// Close connection to X server
 	XCloseDisplay(disp);
-
-	double execTime = (double)(clock() - start)/CLOCKS_PER_SEC;
-	printf("Process completed in %.2lf s\n", execTime);*/
 
 	return 0;
 }
