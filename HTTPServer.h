@@ -6,9 +6,9 @@
 #include <string.h>
 #include <time.h>
 
-const char LOCALHOST[] = "127.0.0.1";
 const char HOMEPAGE[] = "home.html";
 const char IMAGE[] = "scr.jpg";
+const int BUFF_SIZE = 1024;
 
 void server(int port, int downscale)
 {
@@ -53,27 +53,25 @@ void server(int port, int downscale)
 		return(EXIT_FAILURE);
 	}
 	// Recieve request text
-	char buffer[1024];
-	read(newSock, buffer, 1024);
+	char *rbuffer = (char *)malloc(BUFF_SIZE*sizeof(char));
+	read(newSock, rbuffer, BUFF_SIZE - 1);
+	rbuffer[BUFF_SIZE - 1] = '\0';
 
 	// Send homepage if requested
-	if( !strncmp("GET / HTTP/1.1", buffer, strlen("GET / HTTP/1.1")) )
+	if( !strncmp("GET / HTTP/1.1", rbuffer, strlen("GET / HTTP/1.1")) )
 	{
 		printf("Sending home page...\n");
 		
 		// Initialize response
 		char buffer[256];
-		bzero(buffer, sizeof(buffer));
 		char body[1024] = "";
-		FILE *hptr;
-		hptr = fopen(HOMEPAGE, "r");
+		FILE *hptr = fopen(HOMEPAGE, "r");
 		size_t bytes;
 		while( (bytes = fread(buffer, 1, sizeof(buffer), hptr)) > 0) 
 		{
 			// Append to body
-			strcat(body, buffer);
+			strncat(body, buffer, bytes);
 		}
-		fflush(hptr);
 		sprintf(body, body, (int)(20/(downscale*downscale) + 1));
 		char header[128];
 		sprintf(header, "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: %ld\n\n", strlen(body));
@@ -85,9 +83,15 @@ void server(int port, int downscale)
 		send(newSock, body, strlen(body), 0);
 	}
 
+	// Free and rellocate read buffer memory
+	free(rbuffer);
+	rbuffer = (char *)malloc(BUFF_SIZE*sizeof(char));
+
 	// Send screenshot image if requested
-	read(newSock, buffer, 1024);
-	if( !strncmp("GET /scr.jpg", buffer, strlen("GET /scr.jpg")) )
+	read(newSock, rbuffer, BUFF_SIZE - 1);
+	rbuffer[BUFF_SIZE - 1] = '\0';
+
+	if( !strncmp("GET /scr.jpg", rbuffer, strlen("GET /scr.jpg")) )
 	{
 		printf("Sending scr.jpg...\n");
 
@@ -101,16 +105,17 @@ void server(int port, int downscale)
 		// Read from image
 		char buffer[4096];
 		bzero(buffer, sizeof(buffer));
-		FILE *iptr;
-		iptr = fopen(IMAGE, "rb");
+		FILE *iptr = fopen(IMAGE, "rb");
 		size_t bytes;
 		while( (bytes = fread(buffer, 1, sizeof(buffer), iptr)) > 0) 
 		{
 			// Send to client
 			send(newSock, buffer, bytes, 0);
 		}
-		fflush(iptr);
 	}
+
+	// Free read buffer memory
+	free(rbuffer);
 
 	// Close all conections
 	close(newSock);

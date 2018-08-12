@@ -89,7 +89,6 @@ int main(int argc, char *argv[])
 	{
 		clock_t start = clock();
 
-		printf("Including stb_image_write.h...\n");
 		printf("Saving as %s...\n", IMAGE);
 		saveImage(disp, IMAGE, downscale);
 		printf("Saved screenshot successfully.\n");
