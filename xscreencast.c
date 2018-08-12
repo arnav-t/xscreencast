@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 				downscale = atoi(argv[optind]);
 				break;
 			default:
-				fprintf(stderr, "Usage: xscreencast [-d] [downscale] [port]\n");
+				fprintf(stderr, "Usage: xscreencast [-vd] [downscale] [port]\n");
 				exit(EXIT_FAILURE);
 		}
 	}	
