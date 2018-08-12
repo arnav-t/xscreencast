@@ -10,7 +10,7 @@ const char HOMEPAGE[] = "home.html";
 const char IMAGE[] = "scr.jpg";
 const int BUFF_SIZE = 1024;
 
-void server(int port, int downscale)
+void server(int port, int downscale, int verbose)
 {
 	// Set delay according to downscaling
 	int delay = (int)(36/(downscale*downscale)) + 1;
@@ -44,7 +44,8 @@ void server(int port, int downscale)
 		perror("Could not listen to given port.\n");
 		return(EXIT_FAILURE);
 	}
-	printf("Listening to port %d...\n", port);
+	if(verbose)
+		printf("Listening to port %d...\n", port);
 
 	// Initialize and accept a new incoming connection
 	struct sockaddr_in cliAddr;
@@ -63,7 +64,8 @@ void server(int port, int downscale)
 	// Send homepage if requested
 	if( !strncmp("GET / HTTP/1.1", rbuffer, strlen("GET / HTTP/1.1")) )
 	{
-		printf("Sending home page...\n");
+		if(verbose)
+			printf("Sending home page...\n");
 		
 		// Initialize response
 		char buffer[256];
@@ -96,7 +98,8 @@ void server(int port, int downscale)
 
 	if( !strncmp("GET /scr.jpg", rbuffer, strlen("GET /scr.jpg")) )
 	{
-		printf("Sending scr.jpg...\n");
+		if(verbose)
+			printf("Sending scr.jpg...\n");
 
 		// Initialize response
 		char header[] = "HTTP/1.1 200 OK\nContent-Type: image/jpeg\n\n";

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
@@ -26,7 +27,7 @@ void getPixel(Display *disp, int x, int y, XColor *color)
 	XQueryColor(disp, DefaultColormap(disp, DefaultScreen(disp)), color);
 }
 
-void saveImage(Display *disp, char file[], int downscale)
+void saveImage(Display *disp, char file[], int downscale, int verbose)
 {
 	// Get default screen for the display
 	Screen *scr = XDefaultScreenOfDisplay(disp);
@@ -37,15 +38,18 @@ void saveImage(Display *disp, char file[], int downscale)
 	h = HeightOfScreen(scr);
 
 	// Initialize image of screen
-	printf("Initializing image...\n");
+	if(verbose)
+		printf("Initializing image...\n");
 	XImage *img = XGetImage(disp, RootWindow(disp, DefaultScreen(disp)), 0, 0, w, h, AllPlanes, XYPixmap);
 
 	// Allocate memory for image
-	printf("Allocating memory...\n");
+	if(verbose)
+		printf("Allocating memory...\n");
 	unsigned char *pixels = (unsigned char *)malloc(3*(w/downscale)*(h/downscale)*sizeof(unsigned char));
 
 	// Save colors into memory
-	printf("Generating color matrix...\n");
+	if(verbose)
+		printf("Generating color matrix...\n");
 	XColor color;
 	Colormap colormap = DefaultColormap(disp, DefaultScreen(disp));
 	for(int y = 0; y < h/downscale; ++y)
@@ -67,7 +71,8 @@ void saveImage(Display *disp, char file[], int downscale)
 	XFree(img);
 
 	// Save image
-	printf("Writing image...\n");
+	if(verbose)
+		printf("Writing image...\n");
 	stbi_write_jpg(file, w/downscale, h/downscale, 3, pixels, 0);
 
 	// Free pixels
@@ -78,9 +83,28 @@ int main(int argc, char *argv[])
 {
 	// Check command line arguments
 	int downscale = 1;
-	if( !strcmp(argv[1], "-d") )
-		downscale = atoi(argv[2]);
+	int verbose = 0;
+	int opt;
+	while((opt = getopt(argc, argv, "vd")) != -1) 
+	{
+		switch(opt)
+		{
+			case 'v':
+				verbose = 1;
+				break;
+			case 'd': 
+				downscale = atoi(argv[optind]);
+				break;
+			default:
+				fprintf(stderr, "Usage: xscreencast [-d] [downscale] [port]\n");
+				exit(EXIT_FAILURE);
+		}
+	}	
 	int port = atoi(argv[argc - 1]);
+	printf("Using port %d.\n", port);
+
+	if(downscale != 1)
+		printf("Downscaling by %d.\n", downscale);
 
 	// Connect to X server
 	Display *disp = XOpenDisplay(NULL);
@@ -89,15 +113,18 @@ int main(int argc, char *argv[])
 	{
 		clock_t start = clock();
 
-		printf("Saving as %s...\n", IMAGE);
-		saveImage(disp, IMAGE, downscale);
-		printf("Saved screenshot successfully.\n");
+		if(verbose)	
+			printf("Saving as %s...\n", IMAGE);
+		saveImage(disp, IMAGE, downscale, verbose);
+		if(verbose)
+			printf("Saved screenshot successfully.\n");
 
 		// Launch server
-		server(port, downscale);
+		server(port, downscale, verbose);
 
 		double execTime = (double)(clock() - start)/CLOCKS_PER_SEC;
-		printf("Frame completed in %.2lf s\n", execTime);
+		if(verbose)
+			printf("Frame completed in %.2lf s\n", execTime);
 	}
 
 	// Close connection to X server
