@@ -12,6 +12,9 @@ const int BUFF_SIZE = 1024;
 
 void server(int port, int downscale)
 {
+	// Set delay according to downscaling
+	int delay = (int)(36/(downscale*downscale)) + 1;
+
 	// Initialize socket
 	int servSock = socket(AF_INET, SOCK_STREAM, 0);
 	int option = 1;
@@ -72,7 +75,7 @@ void server(int port, int downscale)
 			// Append to body
 			strncat(body, buffer, bytes);
 		}
-		sprintf(body, body, (int)(20/(downscale*downscale) + 1));
+		sprintf(body, body, delay, delay);
 		char header[128];
 		sprintf(header, "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: %ld\n\n", strlen(body));
 
