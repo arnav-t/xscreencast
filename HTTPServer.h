@@ -63,15 +63,17 @@ void server(int port, int downscale)
 		
 		// Initialize response
 		char buffer[256];
+		bzero(buffer, sizeof(buffer));
 		char body[1024] = "";
-		FILE *ptr;
-		ptr = fopen(HOMEPAGE, "r");
+		FILE *hptr;
+		hptr = fopen(HOMEPAGE, "r");
 		size_t bytes;
-		while( (bytes = fread(buffer, 1, sizeof(buffer), ptr)) > 0) 
+		while( (bytes = fread(buffer, 1, sizeof(buffer), hptr)) > 0) 
 		{
 			// Append to body
 			strcat(body, buffer);
 		}
+		fflush(hptr);
 		sprintf(body, body, (int)(20/(downscale*downscale) + 1));
 		char header[128];
 		sprintf(header, "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: %ld\n\n", strlen(body));
@@ -98,14 +100,16 @@ void server(int port, int downscale)
 		// Send response body
 		// Read from image
 		char buffer[4096];
-		FILE *ptr;
-		ptr = fopen(IMAGE, "rb");
+		bzero(buffer, sizeof(buffer));
+		FILE *iptr;
+		iptr = fopen(IMAGE, "rb");
 		size_t bytes;
-		while( (bytes = fread(buffer, 1, sizeof(buffer), ptr)) > 0) 
+		while( (bytes = fread(buffer, 1, sizeof(buffer), iptr)) > 0) 
 		{
 			// Send to client
 			send(newSock, buffer, bytes, 0);
 		}
+		fflush(iptr);
 	}
 
 	// Close all conections
