@@ -2,7 +2,7 @@
 <html>
 <head>
 	<title>xscreencast</title>
-	<meta http-equiv="refresh" content="%.2lf"/>
+	
 	<style type="text/css">
 		body
 		{
@@ -14,13 +14,16 @@
 			border:5px solid red;
 		}
 	</style>
-
-
-
 </head>
 <body>
 	<h1>xscreencast stream</h1>
-	<img src="scr.jpg">
+	<img id="frame" src="scr.jpg">
 	<h2>Live (%.2lf s)</h2>
 </body>
+<script type="text/javascript">
+	setInterval(function ()
+		{
+			document.getElementById("frame").src = "scr.jpg?" + new Date().getTime();
+		}, %d);
+</script>
 </html>

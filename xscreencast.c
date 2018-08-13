@@ -110,12 +110,13 @@ int main(int argc, char *argv[])
 		if(verbose)
 			printf("Saved screenshot successfully.\n");
 
-		// Launch server
-		server(port, delay, verbose);
-
+		// Record frame time
 		delay = (double)(clock() - start)/CLOCKS_PER_SEC + 0.1;
 		if(verbose)
 			printf("Frame completed in %.2lf s\n", delay);
+
+		// Launch server
+		server(port, delay, verbose);
 	}
 
 	// Close connection to X server

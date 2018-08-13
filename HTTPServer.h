@@ -10,6 +10,64 @@ const char HOMEPAGE[] = "home.html";
 const char IMAGE[] = "scr.jpg";
 const int BUFF_SIZE = 1024;
 
+int respond(int newSock, char rbuffer[BUFF_SIZE], double delay, int verbose)
+{
+	// Send homepage if requested
+	if( !strncmp("GET / HTTP/1.1", rbuffer, strlen("GET / HTTP/1.1")) )
+	{
+		if(verbose)
+			printf("Sending home page...\n");
+		
+		// Initialize response
+		char buffer[256];
+		char body[1024] = "";
+		FILE *hptr = fopen(HOMEPAGE, "r");
+		size_t bytes;
+		while( (bytes = fread(buffer, 1, sizeof(buffer), hptr)) > 0) 
+		{
+			// Append to body
+			strncat(body, buffer, bytes);
+		}
+		// Set delay in web page
+		sprintf(body, body, delay, (int)(delay*1000));
+		char header[128];
+		sprintf(header, "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: %ld\n\n", strlen(body));
+
+		// Send HTTP response header
+		send(newSock, header, strlen(header), 0);
+		
+		// Send response body
+		send(newSock, body, strlen(body), 0);
+
+		return 1;
+	}
+	else if( !strncmp("GET /scr.jpg", rbuffer, strlen("GET /scr.jpg")) )
+	{
+		if(verbose)
+			printf("Sending scr.jpg...\n");
+
+		// Initialize response
+		char header[] = "HTTP/1.1 200 OK\nContent-Type: image/jpeg\n\n";
+
+		// Send HTTP response header
+		send(newSock, header, strlen(header), 0);
+
+		// Send response body
+		// Read from image
+		char buffer[4096];
+		bzero(buffer, sizeof(buffer));
+		FILE *iptr = fopen(IMAGE, "rb");
+		size_t bytes;
+		while( (bytes = fread(buffer, 1, sizeof(buffer), iptr)) > 0) 
+		{
+			// Send to client
+			send(newSock, buffer, bytes, 0);
+		}
+
+		return 0;
+	}
+}
+
 void server(int port, double delay, int verbose)
 {
 	// Initialize socket
@@ -57,65 +115,20 @@ void server(int port, double delay, int verbose)
 	char *rbuffer = (char *)malloc(BUFF_SIZE*sizeof(char));
 	read(newSock, rbuffer, BUFF_SIZE - 1);
 	rbuffer[BUFF_SIZE - 1] = '\0';
-
-	// Send homepage if requested
-	if( !strncmp("GET / HTTP/1.1", rbuffer, strlen("GET / HTTP/1.1")) )
+	
+	// Send appropriate response
+	if(respond(newSock, rbuffer, delay, verbose))
 	{
-		if(verbose)
-			printf("Sending home page...\n");
-		
-		// Initialize response
-		char buffer[256];
-		char body[1024] = "";
-		FILE *hptr = fopen(HOMEPAGE, "r");
-		size_t bytes;
-		while( (bytes = fread(buffer, 1, sizeof(buffer), hptr)) > 0) 
-		{
-			// Append to body
-			strncat(body, buffer, bytes);
-		}
-		// Set delay in web page
-		sprintf(body, body, delay, delay);
-		char header[128];
-		sprintf(header, "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: %ld\n\n", strlen(body));
+		// Free and rellocate read buffer memory
+		free(rbuffer);
+		rbuffer = (char *)malloc(BUFF_SIZE*sizeof(char));
 
-		// Send HTTP response header
-		send(newSock, header, strlen(header), 0);
-		
-		// Send response body
-		send(newSock, body, strlen(body), 0);
-	}
+		// Send screenshot image if requested
+		read(newSock, rbuffer, BUFF_SIZE - 1);
+		rbuffer[BUFF_SIZE - 1] = '\0';
 
-	// Free and rellocate read buffer memory
-	free(rbuffer);
-	rbuffer = (char *)malloc(BUFF_SIZE*sizeof(char));
-
-	// Send screenshot image if requested
-	read(newSock, rbuffer, BUFF_SIZE - 1);
-	rbuffer[BUFF_SIZE - 1] = '\0';
-
-	if( !strncmp("GET /scr.jpg", rbuffer, strlen("GET /scr.jpg")) )
-	{
-		if(verbose)
-			printf("Sending scr.jpg...\n");
-
-		// Initialize response
-		char header[] = "HTTP/1.1 200 OK\nContent-Type: image/jpeg\n\n";
-
-		// Send HTTP response header
-		send(newSock, header, strlen(header), 0);
-
-		// Send response body
-		// Read from image
-		char buffer[4096];
-		bzero(buffer, sizeof(buffer));
-		FILE *iptr = fopen(IMAGE, "rb");
-		size_t bytes;
-		while( (bytes = fread(buffer, 1, sizeof(buffer), iptr)) > 0) 
-		{
-			// Send to client
-			send(newSock, buffer, bytes, 0);
-		}
+		// Send appropriate response
+		respond(newSock, rbuffer, delay, verbose);
 	}
 
 	// Free read buffer memory
