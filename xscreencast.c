@@ -12,6 +12,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+const double minDelay = 0.5;
+
 void getPixel(Display *disp, int x, int y, XColor *color)
 {
 	// Initialize 1x1 image
@@ -39,17 +41,21 @@ void saveImage(Display *disp, char file[], int verbose)
 
 	// Initialize image of screen
 	if(verbose)
-		printf("Initializing image...\n");
+		printf("Initializing image... ");
 	XImage *img = XGetImage(disp, RootWindow(disp, DefaultScreen(disp)), 0, 0, w, h, AllPlanes, ZPixmap);
+	if(verbose)
+		printf("[done]\n");
 
 	// Allocate memory for image
 	if(verbose)
-		printf("Allocating memory...\n");
+		printf("Allocating memory... ");
 	unsigned char *pixels = (unsigned char *)malloc(3*w*h*sizeof(unsigned char));
+	if(verbose)
+		printf("[done]\n");
 
 	// Save colors into memory
 	if(verbose)
-		printf("Generating color matrix...\n");
+		printf("Generating color matrix... ");
 	unsigned char *imgPtr = img->data;
 	for(int y = 0; y < h; ++y)
 	{
@@ -61,14 +67,18 @@ void saveImage(Display *disp, char file[], int verbose)
 			*(pixels + 3*(y*w + x%w) + 2) = *(imgPtr + 4*(y*w + x%w) + 0);
 		}
 	}
+	if(verbose)
+		printf("[done]\n");
 
 	// Free memory
 	XFree(img);
 	
 	// Save image
 	if(verbose)
-		printf("Writing image...\n");
+		printf("Writing image... ");
 	stbi_write_jpg(file, w, h, 3, pixels, 0);
+	if(verbose)
+		printf("[done]\n");
 
 	// Free pixels
 	free(pixels);
@@ -99,24 +109,22 @@ int main(int argc, char *argv[])
 
 	// Connect to X server
 	Display *disp = XOpenDisplay(NULL);
-
+	clock_t start;
 	while(1)
 	{
-		clock_t start = clock();
+		// Record start time
+		start = clock();
 
-		if(verbose)	
-			printf("Saving as %s...\n", IMAGE);
+		// Save current frame
 		saveImage(disp, IMAGE, verbose);
-		if(verbose)
-			printf("Saved screenshot successfully.\n");
 
 		// Record frame time
-		delay = (double)(clock() - start)/CLOCKS_PER_SEC + 0.1;
+		delay = (double)(clock() - start)/CLOCKS_PER_SEC;
 		if(verbose)
 			printf("Frame completed in %.2lf s\n", delay);
 
 		// Launch server
-		server(port, delay, verbose);
+		server(port, delay + minDelay, verbose);
 	}
 
 	// Close connection to X server

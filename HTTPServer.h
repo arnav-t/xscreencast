@@ -9,6 +9,8 @@
 const char HOMEPAGE[] = "home.html";
 const char IMAGE[] = "scr.jpg";
 const int BUFF_SIZE = 1024;
+const int HBUFF_SIZE = 256;
+const int IBUFF_SIZE = 65536;
 
 int respond(int newSock, char rbuffer[BUFF_SIZE], double delay, int verbose)
 {
@@ -16,18 +18,21 @@ int respond(int newSock, char rbuffer[BUFF_SIZE], double delay, int verbose)
 	if( !strncmp("GET / HTTP/1.1", rbuffer, strlen("GET / HTTP/1.1")) )
 	{
 		if(verbose)
-			printf("Sending home page...\n");
+			printf("Sending home page... ");
 		
 		// Initialize response
-		char buffer[256];
+		// Read from HTML file
+		char *buffer = (char *)malloc(HBUFF_SIZE*sizeof(char));
 		char body[1024] = "";
 		FILE *hptr = fopen(HOMEPAGE, "r");
 		size_t bytes;
-		while( (bytes = fread(buffer, 1, sizeof(buffer), hptr)) > 0) 
+		while( (bytes = fread(buffer, 1, HBUFF_SIZE, hptr)) > 0) 
 		{
 			// Append to body
 			strncat(body, buffer, bytes);
 		}
+		fclose(hptr);
+		free(buffer);
 		// Set delay in web page
 		sprintf(body, body, delay, (int)(delay*1000));
 		char header[128];
@@ -39,31 +44,37 @@ int respond(int newSock, char rbuffer[BUFF_SIZE], double delay, int verbose)
 		// Send response body
 		send(newSock, body, strlen(body), 0);
 
+		if(verbose)
+			printf("[done]\n");
+
 		return 1;
 	}
 	else if( !strncmp("GET /scr.jpg", rbuffer, strlen("GET /scr.jpg")) )
 	{
 		if(verbose)
-			printf("Sending scr.jpg...\n");
+			printf("Sending scr.jpg... ");
 
 		// Initialize response
 		char header[] = "HTTP/1.1 200 OK\nContent-Type: image/jpeg\n\n";
 
 		// Send HTTP response header
 		send(newSock, header, strlen(header), 0);
-
+		
 		// Send response body
 		// Read from image
-		char buffer[4096];
-		bzero(buffer, sizeof(buffer));
+		char *buffer = (char *)malloc(IBUFF_SIZE*sizeof(char));
+		bzero(buffer, IBUFF_SIZE);
 		FILE *iptr = fopen(IMAGE, "rb");
 		size_t bytes;
-		while( (bytes = fread(buffer, 1, sizeof(buffer), iptr)) > 0) 
+		while( (bytes = fread(buffer, 1, IBUFF_SIZE, iptr)) > 0) 
 		{
 			// Send to client
 			send(newSock, buffer, bytes, 0);
 		}
-
+		fclose(iptr);
+		free(buffer);
+		if(verbose)
+			printf("[done]\n");
 		return 0;
 	}
 }
@@ -100,7 +111,7 @@ void server(int port, double delay, int verbose)
 		return(EXIT_FAILURE);
 	}
 	if(verbose)
-		printf("Listening to port %d...\n", port);
+		printf("Listening to port %d... ", port);
 
 	// Initialize and accept a new incoming connection
 	struct sockaddr_in cliAddr;
@@ -111,6 +122,9 @@ void server(int port, double delay, int verbose)
 		perror("Could not accept incoming connection.\n");
 		return(EXIT_FAILURE);
 	}
+	if(verbose)
+		printf("[done]\n");
+
 	// Recieve request text
 	char *rbuffer = (char *)malloc(BUFF_SIZE*sizeof(char));
 	read(newSock, rbuffer, BUFF_SIZE - 1);
