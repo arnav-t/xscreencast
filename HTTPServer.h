@@ -10,11 +10,8 @@ const char HOMEPAGE[] = "home.html";
 const char IMAGE[] = "scr.jpg";
 const int BUFF_SIZE = 1024;
 
-void server(int port, int downscale, int verbose)
+void server(int port, double delay, int verbose)
 {
-	// Set delay according to downscaling
-	int delay = (int)(36/(downscale*downscale)) + 1;
-
 	// Initialize socket
 	int servSock = socket(AF_INET, SOCK_STREAM, 0);
 	int option = 1;
@@ -77,6 +74,7 @@ void server(int port, int downscale, int verbose)
 			// Append to body
 			strncat(body, buffer, bytes);
 		}
+		// Set delay in web page
 		sprintf(body, body, delay, delay);
 		char header[128];
 		sprintf(header, "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: %ld\n\n", strlen(body));
