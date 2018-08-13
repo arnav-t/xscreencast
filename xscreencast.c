@@ -31,13 +31,10 @@ void getPixel(Display *disp, int x, int y, XColor *color)
 
 void saveImage(Display *disp, char file[], int verbose)
 {
-	// Get default screen for the display
-	Screen *scr = XDefaultScreenOfDisplay(disp);
-
 	// Get the screen resolution
 	int w, h;
-	w = WidthOfScreen(scr);
-	h = HeightOfScreen(scr);
+	w = WidthOfScreen(XDefaultScreenOfDisplay(disp));
+	h = HeightOfScreen(XDefaultScreenOfDisplay(disp));
 
 	// Initialize image of screen
 	if(verbose)
@@ -72,6 +69,7 @@ void saveImage(Display *disp, char file[], int verbose)
 
 	// Free memory
 	XFree(img);
+	free(imgPtr);
 	
 	// Save image
 	if(verbose)
