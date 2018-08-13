@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <string.h>
 #include <time.h>
 
@@ -117,13 +118,14 @@ void server(int port, double delay, int verbose)
 	struct sockaddr_in cliAddr;
 	int cliAddrLen = sizeof(cliAddr);
 	int newSock = accept(servSock, &cliAddr, &cliAddrLen);
+	char *cliIP = inet_ntoa(cliAddr.sin_addr);
 	if(newSock == -1)
 	{
 		perror("Could not accept incoming connection.\n");
 		return(EXIT_FAILURE);
 	}
 	if(verbose)
-		printf("[done]\n");
+		printf("[connected to %s]\n",cliIP);
 
 	// Recieve request text
 	char *rbuffer = (char *)malloc(BUFF_SIZE*sizeof(char));

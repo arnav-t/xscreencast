@@ -12,7 +12,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-const double minDelay = 0.5;
 
 void getPixel(Display *disp, int x, int y, XColor *color)
 {
@@ -85,20 +84,24 @@ void saveImage(Display *disp, char file[], int verbose)
 int main(int argc, char *argv[])
 {
 	// Initialize delay
-	double delay = 1;
+	double minDelay = 0.5;
+	double delay;
 
 	// Check command line arguments
 	int verbose = 0;
 	int opt;
-	while((opt = getopt(argc, argv, "v")) != -1) 
+	while((opt = getopt(argc, argv, "vm")) != -1) 
 	{
 		switch(opt)
 		{
 			case 'v':
 				verbose = 1;
 				break;
+			case 'm':
+				minDelay = 0.1;
+				break;
 			default:
-				fprintf(stderr, "Usage: xscreencast [-v] [port]\n");
+				fprintf(stderr, "Usage: xscreencast [OPTION]... [PORT]\n\nOptions:\n\t-v\t\tVerbose output\n\t-m\t\tMaximum framerate\n");
 				exit(EXIT_FAILURE);
 		}
 	}	
