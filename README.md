@@ -1,5 +1,10 @@
 # xscreencast
 ## Screencasting tool for X Window System    
+### Installation     
+```bash     
+make    
+sudo make install     
+```     
 ### Usage    
 #### Stream on [port]   
 `xscreencast [port]`     
