@@ -1,9 +1,6 @@
 CC = gcc
 LIBS = -lX11
 
-install: xscreencast
-	cp xscreencast /usr/local/bin/xscreencast
-
 xscreencast: xscreencast.o stb_image_write.h.gch HTTPServer.h.gch
 	$(CC) xscreencast.o -o xscreencast $(LIBS)
 
@@ -18,3 +15,6 @@ stb_image_write.h.gch: stb_image_write.h
 
 clean:
 	rm *.o *.h.gch
+
+install: xscreencast
+	cp xscreencast /usr/local/bin/xscreencast
