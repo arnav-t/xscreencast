@@ -8,7 +8,16 @@ sudo make install
 ### Usage    
 #### Stream on [port]   
 ```sh
+Usage: xscreencast [OPTION]... [PORT]
+
+Options:
+	-v		Verbose output
+	-m		Maximum framerate
+```
+```sh
 xscreencast [port]     
+```
+```sh
 xscreencast 8080     
 ```                  
 #### Verbose output    
