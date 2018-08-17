@@ -28,3 +28,6 @@ xscreencast -v 8080
 ```sh
 xscreencast -m 8080       
 ```
+## Customization
+The stream page can also be customized. The template is stored in `~/.xscreencast/home.html` and can be edited. Note that there must be at least one `img` container pointing to `/src.jpg` for streaming.       
+![screenshot](https://i.imgur.com/tb8nfQQ.jpg "Screenshot")
