@@ -10,8 +10,20 @@
 #include "HTTPServer.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBI_WRITE_NO_STDIO
 #include "stb_image_write.h"
 
+int imgSize;
+
+void writeCallback(void *context, void *data, int size)
+{
+	// Append data to context
+	for(int i = 0; i < size; ++i)
+		*((unsigned char *)context + imgSize + i) = *((unsigned char *)data + i);
+
+	// Update the size of context
+	imgSize += size;
+}
 
 void getPixel(Display *disp, int x, int y, XColor *color)
 {
@@ -28,7 +40,7 @@ void getPixel(Display *disp, int x, int y, XColor *color)
 	XQueryColor(disp, DefaultColormap(disp, DefaultScreen(disp)), color);
 }
 
-void saveImage(Display *disp, char file[], int verbose)
+char *getImage(Display *disp, int verbose)
 {
 	// Get the screen resolution
 	int w, h;
@@ -70,19 +82,38 @@ void saveImage(Display *disp, char file[], int verbose)
 	XFree(img);
 	free(imgPtr);
 	
-	// Save image
+	// Save image to memory
+	// Reset size of context
+	imgSize = 0;
+	// Maxiumum theoretical size at 24 bpp
+	unsigned char *context = (unsigned char *)malloc(3*w*h*sizeof(char));
 	if(verbose)
 		printf("Writing image... ");
-	stbi_write_jpg(file, w, h, 3, pixels, 0);
+	// Write to context (using callback function)
+	stbi_write_jpg_to_func(writeCallback, context, w, h, 3, pixels, 0);
 	if(verbose)
 		printf("[done]\n");
 
 	// Free pixels
 	free(pixels);
+
+	// Return image data
+	return context;
 }
 
 int main(int argc, char *argv[])
 {
+	// Initialize path variables
+	char HOMEPAGE[128];
+	char USER[33];
+
+	// Get username
+	getlogin_r(USER, 32);
+	USER[32] = '\0';
+
+	// Format file paths
+	sprintf(HOMEPAGE, "/home/%s/.xscreencast/home.html", USER);
+
 	// Initialize delay
 	double minDelay = 0.5;
 	double delay;
@@ -117,7 +148,7 @@ int main(int argc, char *argv[])
 		start = clock();
 
 		// Save current frame
-		saveImage(disp, IMAGE, verbose);
+		char *imgData = getImage(disp, verbose);
 
 		// Record frame time
 		delay = (double)(clock() - start)/CLOCKS_PER_SEC;
@@ -125,7 +156,7 @@ int main(int argc, char *argv[])
 			printf("Frame completed in %.2lf s\n", delay);
 
 		// Launch server
-		server(port, delay + minDelay, verbose);
+		server(port, delay + minDelay, verbose, HOMEPAGE, imgData, imgSize);
 	}
 
 	// Close connection to X server

@@ -7,13 +7,11 @@
 #include <string.h>
 #include <time.h>
 
-const char HOMEPAGE[] = "home.html";
-const char IMAGE[] = "scr.jpg";
 const int BUFF_SIZE = 1024;
 const int HBUFF_SIZE = 256;
-const int IBUFF_SIZE = 65536;
 
-int respond(int newSock, char rbuffer[BUFF_SIZE], double delay, int verbose)
+
+int respond(int newSock, char rbuffer[BUFF_SIZE], double delay, int verbose, char HOMEPAGE[], char *imgData, int imgSize)
 {
 	// Send homepage if requested
 	if( !strncmp("GET / HTTP/1.1", rbuffer, strlen("GET / HTTP/1.1")) )
@@ -61,26 +59,21 @@ int respond(int newSock, char rbuffer[BUFF_SIZE], double delay, int verbose)
 		// Send HTTP response header
 		send(newSock, header, strlen(header), 0);
 		
-		// Send response body
-		// Read from image
-		char *buffer = (char *)malloc(IBUFF_SIZE*sizeof(char));
-		bzero(buffer, IBUFF_SIZE);
-		FILE *iptr = fopen(IMAGE, "rb");
-		size_t bytes;
-		while( (bytes = fread(buffer, 1, IBUFF_SIZE, iptr)) > 0) 
-		{
-			// Send to client
-			send(newSock, buffer, bytes, 0);
-		}
-		fclose(iptr);
-		free(buffer);
+		// Send response body image data
+		if(verbose)
+			printf("(%d B)", imgSize);
+		send(newSock, imgData, imgSize, 0);
+
+		// Free image data after sending
+		free(imgData);
+
 		if(verbose)
 			printf("[done]\n");
 		return 0;
 	}
 }
 
-void server(int port, double delay, int verbose)
+void server(int port, double delay, int verbose, char HOMEPAGE[], char *imgData, int imgSize)
 {
 	// Initialize socket
 	int servSock = socket(AF_INET, SOCK_STREAM, 0);
@@ -133,7 +126,7 @@ void server(int port, double delay, int verbose)
 	rbuffer[BUFF_SIZE - 1] = '\0';
 	
 	// Send appropriate response
-	if(respond(newSock, rbuffer, delay, verbose))
+	if(respond(newSock, rbuffer, delay, verbose, HOMEPAGE, imgData, imgSize))
 	{
 		// Free and rellocate read buffer memory
 		free(rbuffer);
@@ -144,7 +137,7 @@ void server(int port, double delay, int verbose)
 		rbuffer[BUFF_SIZE - 1] = '\0';
 
 		// Send appropriate response
-		respond(newSock, rbuffer, delay, verbose);
+		respond(newSock, rbuffer, delay, verbose, HOMEPAGE, imgData, imgSize);
 	}
 
 	// Free read buffer memory
