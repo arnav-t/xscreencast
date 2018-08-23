@@ -20,3 +20,7 @@ install: xscreencast
 	cp xscreencast /usr/local/bin/xscreencast
 	mkdir -p ~/.xscreencast
 	cp home.html ~/.xscreencast/home.html
+
+uninstall:
+	rm /usr/local/bin/xscreencast
+	rm -rf ~/.xscreencast
