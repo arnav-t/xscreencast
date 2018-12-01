@@ -1,4 +1,5 @@
 # xscreencast
+![C](https://img.shields.io/badge/Made%20with-C-orange.svg)        
 Screencasting tool for X Window System    
 ## Installation     
 ```sh     
