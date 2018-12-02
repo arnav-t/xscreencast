@@ -1,5 +1,7 @@
-# xscreencast
-![C](https://img.shields.io/badge/Made%20with-C-orange.svg)        
+# xscreencast [![Build Status](https://travis-ci.org/arnav-t/xscreencast.svg?branch=master)](https://travis-ci.org/arnav-t/xscreencast)
+![C](https://img.shields.io/badge/Made%20with-C-orange.svg) 
+![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)
+       
 Screencasting tool for X Window System    
 ## Installation     
 ```sh     
