@@ -1,0 +1,5 @@
+sudo: required
+install:
+ - sudo apt-get install libx11-dev
+script:
+ - make
